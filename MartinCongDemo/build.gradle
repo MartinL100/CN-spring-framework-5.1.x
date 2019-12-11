@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group 'org.springframework'
-version '5.1.13.BUILD-SNAPSHOT'
+//group 'org.springframework'
+//version '5.1.13.BUILD-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
