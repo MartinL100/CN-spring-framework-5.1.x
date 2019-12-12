@@ -16,17 +16,17 @@
 
 package org.springframework.core.io.support;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 
 /**
  * Holder that combines a {@link Resource} descriptor with a specific encoding
@@ -57,8 +57,10 @@ public class EncodedResource implements InputStreamSource {
 	 * Create a new {@code EncodedResource} for the given {@code Resource},
 	 * not specifying an explicit encoding or {@code Charset}.
 	 * @param resource the {@code Resource} to hold (never {@code null})
+	 * 对resource进行编码封装
 	 */
 	public EncodedResource(Resource resource) {
+		//对resource进行编码封装
 		this(resource, null, null);
 	}
 

@@ -36,6 +36,7 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 1.1
  * @see org.springframework.core.io.Resource
+ * 定义将资源文件转化为BeanDefinition
  */
 public interface BeanDefinitionReader {
 

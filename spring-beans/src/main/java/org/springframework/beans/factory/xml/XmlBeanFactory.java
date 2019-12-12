@@ -53,7 +53,7 @@ import org.springframework.core.io.Resource;
 @Deprecated
 @SuppressWarnings({"serial", "all"})
 public class XmlBeanFactory extends DefaultListableBeanFactory {
-
+	/**和DefaultListableBeanFactory唯一不同在于此属性，专门用于解析、注册资源文件*/
 	private final XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(this);
 
 

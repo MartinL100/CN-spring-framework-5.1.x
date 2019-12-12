@@ -514,9 +514,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
+			/**1、记录开始时间
+			 * 2、标记容器为激活
+			 * 3、初始化上下文
+			 * 4、验证必填项
+			 * */
 			// Prepare this context for refreshing.
 			prepareRefresh();
-
+			/**
+			 * 1、关闭已有factory
+			 * 2、创建新工厂
+			 * 3、设置工厂特殊信息
+			 * 3、解析，将xml转化为BeanDefinition
+			 */
 			// Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -526,7 +536,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
-
+				/**
+				 * */
 				// Invoke factory processors registered as beans in the context.
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -581,10 +592,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * active flag as well as performing any initialization of property sources.
 	 */
 	protected void prepareRefresh() {
-		// Switch to active.
+		// Switch to active.记录开始时间
 		this.startupDate = System.currentTimeMillis();
 		this.closed.set(false);
-		this.active.set(true);
+		this.active.set(true);//标记容器为激活
 
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled()) {
@@ -594,10 +605,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				logger.debug("Refreshing " + getDisplayName());
 			}
 		}
-
+		/**初始化上下文*/
 		// Initialize any placeholder property sources in the context environment.
 		initPropertySources();
-
+		/**验证必填项*/
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
 		getEnvironment().validateRequiredProperties();

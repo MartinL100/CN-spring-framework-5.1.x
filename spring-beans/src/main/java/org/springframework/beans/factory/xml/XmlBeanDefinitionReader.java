@@ -302,6 +302,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
@@ -317,7 +318,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
-
+		//通过属性记录已加载的资源，去重
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -328,12 +329,15 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 		try {
+			//获取Spring输入流
 			InputStream inputStream = encodedResource.getResource().getInputStream();
 			try {
+				//将Spring的输入流转化为org.xml.sax.InputSource
 				InputSource inputSource = new InputSource(inputStream);
 				if (encodedResource.getEncoding() != null) {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
+				//进入核心部分
 				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 			}
 			finally {
@@ -432,6 +436,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see DocumentLoader#loadDocument
 	 */
 	protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
+		/**
+		 * getValidationModeForResource(resource) 获取xml验证方式 XSD/DTD
+		 * getEntityResolver() 从本地获取xml的验证，而不从网上获取，
+		 */
+
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
 				getValidationModeForResource(resource), isNamespaceAware());
 	}
@@ -445,10 +454,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #detectValidationMode
 	 */
 	protected int getValidationModeForResource(Resource resource) {
+		//获取xml的验证模式；DTD/XSD
 		int validationModeToUse = getValidationMode();
+		//如果手动设置了验证模式则使用指定验证模式  validationMode属性进行设置
 		if (validationModeToUse != VALIDATION_AUTO) {
 			return validationModeToUse;
 		}
+		//未设置则使用自动检测
 		int detectedMode = detectValidationMode(resource);
 		if (detectedMode != VALIDATION_AUTO) {
 			return detectedMode;
@@ -509,9 +521,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		/**将documentReader初始化为DefaultBeanDefinitionDocumentReader*/
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		/**记录统计前BeanDefinition数量*/
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		/**加载并注册BeanDefinition*/
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		/**记录本次加载BeanDefinition数量*/
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
