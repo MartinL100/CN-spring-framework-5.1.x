@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="car" class="com.cbat.xmlload.bean.Car" init-method="initialize"></bean>
+	<bean id="carDao"  class="com.cbat.xmlload.dao.CarDao" >
+		<lookup-method name="getCar" bean="car"></lookup-method>
+		<replaced-method name="initMethod" replacer="replacer"></replaced-method>
+	</bean>
+	<bean id="replacer" class="com.cbat.xmlload.configration.MyMethodReplacer"></bean>
+
+	<bean id="carf" class="com.cbat.xmlload.configration.MyFactoryBean">
+		<property name="carInfo" value="1,2,3"></property>
+	</bean>
+	<bean id="myLifecycle" class="applicactioncontext.MyLifecycle"></bean>
+	<bean id="myBeanFactoryPostProcessor" class="applicactioncontext.MyBeanFactoryPostProcessor"></bean>
+	<bean id="myBeanFactoryPostProcessorOrder2" class="applicactioncontext.MyBeanFactoryPostProcessorOrder2"></bean>
+
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>messages</value>
+			</list>
+		</property>
+	</bean>
+
+	<import resource="MyAppContext.xml"></import>
+</beans>

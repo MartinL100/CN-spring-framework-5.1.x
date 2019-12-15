@@ -23,7 +23,7 @@ import org.springframework.beans.BeansException;
  *
  * <p>The typical usage will be to invoke custom destruction callbacks on
  * specific bean types, matching corresponding initialization callbacks.
- *
+ *销毁Bean实例的扩展接口
  * @author Juergen Hoeller
  * @since 1.0.1
  */
@@ -40,6 +40,7 @@ public interface DestructionAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#setDestroyMethodName(String)
+	 *
 	 */
 	void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException;
 

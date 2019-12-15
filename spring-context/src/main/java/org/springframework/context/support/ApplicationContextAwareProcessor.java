@@ -16,23 +16,18 @@
 
 package org.springframework.context.support;
 
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.EmbeddedValueResolver;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.EmbeddedValueResolverAware;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.MessageSourceAware;
-import org.springframework.context.ResourceLoaderAware;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
+import org.springframework.context.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
+
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor}
@@ -77,6 +72,10 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
+		/**
+		 * @see AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)
+		 */
+		System.out.println("执行自定义init()方法前：postProcessBeforeInitialization--------->"+beanName);
 		AccessControlContext acc = null;
 
 		if (System.getSecurityManager() != null &&
@@ -124,6 +123,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
+		System.out.println("执行自定义init()方法后：postProcessAfterInitialization");
 		return bean;
 	}
 

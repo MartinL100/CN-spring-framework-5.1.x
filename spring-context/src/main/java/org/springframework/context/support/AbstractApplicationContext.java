@@ -516,7 +516,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		synchronized (this.startupShutdownMonitor) {
 			/**1、记录开始时间
 			 * 2、标记容器为激活
-			 * 3、初始化上下文
+			 * 3、初始化上下文       扩展上下文环境定义及验证initPropertySources();
 			 * 4、验证必填项
 			 * */
 			// Prepare this context for refreshing.
@@ -524,41 +524,47 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			/**
 			 * 1、关闭已有factory
 			 * 2、创建新工厂
-			 * 3、设置工厂特殊信息
+			 * 3、设置工厂特殊信息，    定制化工厂customizeBeanFactory(DefaultListableBeanFactory beanFactory)
 			 * 3、解析，将xml转化为BeanDefinition
 			 */
 			// Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
-
+			/**
+			 * 增加BeanPostProcessor 用于在Initialization时进行扩展
+			 */
 			// Prepare the bean factory for use in this context.
 			prepareBeanFactory(beanFactory);
 
 			try {
+				//子类覆盖方法做额外处理
 				// Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 				/**
+				 * 激活BeanFactoryPostProcessors处理器
+				 * 带顺序执行postProcessBeanFactory
+				 *
 				 * */
 				// Invoke factory processors registered as beans in the context.
 				invokeBeanFactoryPostProcessors(beanFactory);
-
+				//注册Bean处理器
 				// Register bean processors that intercept bean creation.
 				registerBeanPostProcessors(beanFactory);
-
+				//国际化
 				// Initialize message source for this context.
 				initMessageSource();
-
+				//初始化应用消息广播器
 				// Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
-
+				//子类初始化其他bean
 				// Initialize other special beans in specific context subclasses.
 				onRefresh();
-
+				//注册监听器
 				// Check for listener beans and register them.
 				registerListeners();
-
+				//初始化剩下的单实例
 				// Instantiate all remaining (non-lazy-init) singletons.
 				finishBeanFactoryInitialization(beanFactory);
-
+				//完成刷新过程
 				// Last step: publish corresponding event.
 				finishRefresh();
 			}
@@ -605,7 +611,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				logger.debug("Refreshing " + getDisplayName());
 			}
 		}
-		/**初始化上下文*/
+		/**初始化上下文，留给子类覆盖，扩展*/
 		// Initialize any placeholder property sources in the context environment.
 		initPropertySources();
 		/**验证必填项*/
@@ -632,6 +638,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Replace any stub property sources with actual instances.
 	 * @see org.springframework.core.env.PropertySource.StubPropertySource
 	 * @see org.springframework.web.context.support.WebApplicationContextUtils#initServletPropertySources
+	 * initPropertySources扩展，用于Spring环境准备
 	 */
 	protected void initPropertySources() {
 		// For subclasses: do nothing by default.
@@ -644,7 +651,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//初始化BeanFactory,并进行xml文件读取，并将得到的BeanFactory记录在当前实体的属性中
 		refreshBeanFactory();
+		//返回当前实体的 beanFactory
 		return getBeanFactory();
 	}
 
@@ -656,18 +665,25 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
+		//扩展语言处理器，默认可使用#{bean.xxx}形式调用相关属性值，如spel
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+		//增加默认的PropertyEditor，用于对bean的属性设置管理的工具
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
-
+		/**
+		 * 增加BeanPostProcessor 用于在Initialization时进行扩展
+		 * postProcessBeforeInitialization()
+		 * postProcessAfterInitialization()
+		 */
 		// Configure the bean factory with context callbacks.
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+		/**忽略部分自动装配*/
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationEventPublisherAware.class);
 		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
-
+		/**自动装配的特殊规则*/
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
@@ -675,16 +691,17 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
+
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
-
+		/**增加对AspectJ的支持*/
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
 		if (beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			// Set a temporary ClassLoader for type matching.
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
 		}
-
+		//添加默认的系统环境bean
 		// Register default environment beans.
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
@@ -714,7 +731,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
-
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
 		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
 		if (beanFactory.getTempClassLoader() == null && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
@@ -797,13 +813,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void initLifecycleProcessor() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		if (beanFactory.containsLocalBean(LIFECYCLE_PROCESSOR_BEAN_NAME)) {
+			//自定义
 			this.lifecycleProcessor =
 					beanFactory.getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Using LifecycleProcessor [" + this.lifecycleProcessor + "]");
 			}
 		}
-		else {
+		else {//默认
 			DefaultLifecycleProcessor defaultProcessor = new DefaultLifecycleProcessor();
 			defaultProcessor.setBeanFactory(beanFactory);
 			this.lifecycleProcessor = defaultProcessor;
@@ -859,6 +876,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		/**
+		 * ConversionService.class
+		 * 变量类型之间的转换  如 String -->Date
+		 */
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -882,9 +903,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
+		/**冻结所有beanDefinitions,不能再被修改和操作*/
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		/**
+		 * 初始化饿汗式加载
+		 * 将BeanDefinition转化为Bean
+		 */
 		beanFactory.preInstantiateSingletons();
 	}
 
@@ -898,9 +924,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		clearResourceCaches();
 
 		// Initialize lifecycle processor for this context.
+		/**初始化生命周期函数*/
 		initLifecycleProcessor();
 
 		// Propagate refresh to lifecycle processor first.
+		/**启动所有实现lifecycle接口的bean*/
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.

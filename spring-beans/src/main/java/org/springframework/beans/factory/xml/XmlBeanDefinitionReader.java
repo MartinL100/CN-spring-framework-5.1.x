@@ -394,7 +394,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			//获取
 			Document doc = doLoadDocument(inputSource, resource);
+			//注册BeanDefinitions
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -438,7 +440,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
 		/**
 		 * getValidationModeForResource(resource) 获取xml验证方式 XSD/DTD
-		 * getEntityResolver() 从本地获取xml的验证，而不从网上获取，
+		 * getEntityResolver() 获取xml的验证方式，获取验证所需的信息如xsd文件的路径等
 		 */
 
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
@@ -526,6 +528,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		/**记录统计前BeanDefinition数量*/
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		/**加载并注册BeanDefinition*/
+		/**createReaderContext(resource)创建上下文信息*/
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		/**记录本次加载BeanDefinition数量*/
 		return getRegistry().getBeanDefinitionCount() - countBefore;

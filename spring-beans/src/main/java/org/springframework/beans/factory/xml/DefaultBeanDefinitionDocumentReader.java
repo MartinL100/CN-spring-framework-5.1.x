@@ -91,7 +91,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 */
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
-		this.readerContext = readerContext;
+		this.readerContext = readerContext;//环境上下文信息
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -126,6 +126,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// this behavior emulates a stack of delegates without actually necessitating one.
 		//设置解析器
 		BeanDefinitionParserDelegate parent = this.delegate;
+		//配置委派器
 		this.delegate = createDelegate(getReaderContext(), root, parent);
 		//处理profile属性
 		if (this.delegate.isDefaultNamespace(root)) {
